@@ -58,12 +58,15 @@
                                           <TextField fx:id="nummerTextFeld" GridPane.rowIndex="1" />
                                           <ListView fx:id="positionenListView" prefHeight="99.0" prefWidth="174.0" GridPane.columnIndex="3" GridPane.columnSpan="4" GridPane.rowIndex="1" GridPane.rowSpan="4" />
                                           <Label text="Nummer" />
-                                          <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.rowIndex="5">
-                                            <buttons>
-                                              <Button fx:id="addButton" mnemonicParsing="false" text="+" />
-                                            </buttons>
-                                          </ButtonBar>
+                                          <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.rowIndex="5" />
                                           <Label text="Positionen" GridPane.columnIndex="3" />
+                                          <ButtonBar id="positionButtonBar" fx:id="positionButtonBar" prefHeight="30.0" prefWidth="180.0" GridPane.columnIndex="2" GridPane.rowIndex="5">
+                                             <buttons>
+                                              <Button fx:id="addButton" alignment="CENTER" contentDisplay="RIGHT" minWidth="49.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="53.0" text="+" />
+                                                <Button fx:id="positionenScanButton" mnemonicParsing="false" text="Scan" visible="false" />
+                                                <Button id="positionButtonBar" fx:id="rechnungSaveButton" mnemonicParsing="false" text="Speicher" visible="false" />
+                                             </buttons>
+                                          </ButtonBar>
                                        </children>
                                     </GridPane>
                                  </children></AnchorPane>
@@ -78,11 +81,11 @@
                               <HBox prefHeight="199.0" prefWidth="444.0">
                                  <children>
                                     <Label text="Jahr" />
-                                    <ComboBox prefHeight="27.0" prefWidth="61.0" />
+                                    <ComboBox id="jahrComboBox" fx:id="jahrComboBox" prefHeight="27.0" prefWidth="61.0" />
                                     <Label text="Monat" />
-                                    <ComboBox prefHeight="27.0" prefWidth="89.0" />
+                                    <ComboBox id="monatComboBox" fx:id="monatComboBox" prefHeight="27.0" prefWidth="89.0" />
                                     <Label text="Kategorie" />
-                                    <ComboBox prefHeight="27.0" prefWidth="94.0" />
+                                    <ComboBox id="kategorieComboBox" fx:id="kategorieComboBox" prefHeight="27.0" prefWidth="94.0" />
                                  </children>
                               </HBox>
                            </children></VBox>
