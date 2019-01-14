@@ -58,6 +58,7 @@ public class Rechnung implements Iterable<Position> {
     public String getDateTimeFormatted(){
         return new LocalDateTimeStringConverter().toString(getDateTime());
     }
+
     @Override
     public String toString() {
         return  nr +"(" +betrag()+ "€)" +

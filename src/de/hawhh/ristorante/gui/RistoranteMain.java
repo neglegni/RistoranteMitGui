@@ -12,6 +12,7 @@ public class RistoranteMain extends Application {
     public void start(Stage primaryStage) throws Exception{
         System.out.println(getClass().getResource("sample.fxml"));
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+
         primaryStage.setTitle("Piccolo Ristorante");
         primaryStage.setScene(new Scene(root, 1000, 700));
         primaryStage.show();
