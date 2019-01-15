@@ -141,7 +141,7 @@ public class RistoranteController {
                         treeView.add(neueRechnung);
                     }
 
-
+                    // TODO neues Element im TreeView aufklappen.
                     //rechnungTreeView.refresh();
                     //rechnungTreeView.getSeSlectionModel().select(rechnungTreeView.getSelectionModel().getSelectedIndex());
 
@@ -210,11 +210,7 @@ public class RistoranteController {
             nummerTextFeld.setText(rechnung.getNr());
             tischComboBox.getSelectionModel().select(rechnung.getTisch().ordinal());
             datumTextFeld.setText(rechnung.getDateTime().toString());
-            // datumFeld.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter()));
-            // positionFeld
-            for (int i = 0; i < rechnung.getPositionen().size(); i++) {
-                // TODO positionListView.setItems(rechnung.getPositionen().get(i));
-            }
+
         }
 
         private void clearAll() {
@@ -267,6 +263,7 @@ public class RistoranteController {
 
         public void add(Rechnung neueRechnung) {
             append(rechnungTreeView.getRoot(), neueRechnung);
+            //TODO
             //rechnungTreeView.getSelectionModel().select(TreeItem<>(neueRechnung));
         }
 
@@ -287,15 +284,15 @@ public class RistoranteController {
             monatComboBox.setDisable(true);
 
             jahrComboBox.setItems(FXCollections.observableArrayList(RechnungHelper.jahre(rechnungen)));
-            if (jahrComboBox.getValue() != null) {
-                monatComboBox.setItems(FXCollections.observableArrayList(DateTimeUtil.legalMonthsPerYear((Integer) jahrComboBox.getValue())));
-            }
             kategorieComboBox.setItems(FXCollections.observableArrayList(ProduktKategorie.values()));
+
             jahrComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
                 @Override
                 public void changed(ObservableValue observable, Object oldValue, Object newValue) {
                     if(newValue != null) {
                         monatComboBox.setDisable(false);
+                        monatComboBox.setItems(FXCollections.observableArrayList(DateTimeUtil.legalMonthsPerYear((Integer)jahrComboBox.getValue())));
+
                     }
                 }
             });
