@@ -22,7 +22,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static de.hawhh.ristorante.uimodelhelper.TreeModelHelper.append;
 import static javafx.scene.input.KeyCode.Y;
@@ -93,8 +96,8 @@ public class RistoranteController {
     class RechnungDetailView {
         private final String titel = "Rechnung";
         private Rechnung rechnung;
-        //private Button positionenScanButton = new Button("Scan");
-        //private Button rechnungSaveButton = new Button("Speichern");
+        private Button positionenScanButton = new Button("Scan");
+        private Button rechnungSaveButton = new Button("Speichern");
 
         RechnungDetailView() {
             initialize();
@@ -102,26 +105,17 @@ public class RistoranteController {
 
         private void initialize() {
 
-            tischComboBox.setItems(FXCollections.observableArrayList(Tisch.values()));
-            nummerTextFeld.setEditable(true);
-            datumTextFeld.setEditable(true);
+            nummerTextFeld.setEditable(false);
+            datumTextFeld.setEditable(false);
+            datumTextFeld.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter()));
             tischComboBox.setDisable(true);
-            rechnungSaveButton.setVisible(false);
-            positionenScanButton.setVisible(false);
+            tischComboBox.setItems(FXCollections.observableArrayList(Tisch.values()));
             //positionenListView.setItems(null);
-
-
-            // Funktionen für den Plus-Button.
-            addButton.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    prepareEdit();
-                }
-            });
 
             positionenScanButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
+                    System.out.println("SCAN PRESSED");
                     positionenListView.setItems(FXCollections.observableArrayList(new PositionGenerator().generierePositionen(MAX_POSITIONEN)));
                     rechnungSaveButton.setDisable(false);
                 }
@@ -130,94 +124,94 @@ public class RistoranteController {
             rechnungSaveButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent event) {
+                    System.out.println("SAVE PRESSED");
                     // String zu LOcalDatetime Konvertieren.
                     String date = datumTextFeld.getText();
-                    LocalDateTime localdatetime = LocalDateTime.parse(date);
+                    LocalDateTime localdatetime = new LocalDateTimeStringConverter().fromString(date);
+                    //LocalDateTime localdatetime = LocalDateTime.parse(date);
                     //neues RechnungObject erstellen
+                    Rechnung neueRechnung;
                     if (tischComboBox.getValue() != null) {
-                        Rechnung neueRechnung = new Rechnung(nummerTextFeld.getText(), localdatetime, (Tisch) tischComboBox.getValue());
+                        neueRechnung = new Rechnung(nummerTextFeld.getText(), localdatetime, (Tisch) tischComboBox.getValue());
+                        // TODO Positionen lesen und eintragen
+
                         //neues Rechnungsobjekt zum treeView hinzufügen.
                         // die neue Rechnung sichtbar machen und selektieren.
                         treeView.add(neueRechnung);
+
+                        //TODO if es existiert ein Scatterplott, dann hier aktualisieren.
+                        scatterView.update(neueRechnung);
+                        prepareBrowse();
+
                     }
 
-                    // TODO neues Element im TreeView aufklappen.
-                    //rechnungTreeView.refresh();
-                    //rechnungTreeView.getSeSlectionModel().select(rechnungTreeView.getSelectionModel().getSelectedIndex());
 
-                    //TODO if es existiert ein Scatterplott, dann hier aktualisieren.
-
-                    //wieder in die Ursprüngliche Detaileinsicht gewechselt
-
-                    //TreeView wird enabled.
-                    rechnungTreeView.setDisable(false);
                 }
             });
 
-        }
+            // wechseln in den Rechnungseditor
+            addButton.setOnAction((ActionEvent e) ->{
+                prepareEdit();
+            });        }
+
 
         void prepareBrowse() {
 
+            // positionButtonBar.getButtons().clear();
+            positionButtonBar.getButtons().setAll(addButton);
+            //wieder in die Ursprüngliche Detaileinsicht gewechselt
+//            positionenScanButton.setVisible(false);
+//            rechnungSaveButton.setDisable(true);
+//            rechnungSaveButton.setVisible(false);
+//            addButton.setVisible(true);
+
+            //TreeView wird enabled.
+            rechnungTreeView.setDisable(false);
         }
 
-        void prepareEdit() {
-            addButton.setVisible(false);
-            rechnungSaveButton.setVisible(true);
-            rechnungSaveButton.setDisable(true);
-            positionenScanButton.setVisible(true);
+        private void prepareEdit() {
+            //positionButtonBar.getButtons().clear();
+            positionButtonBar.getButtons().setAll(positionenScanButton,rechnungSaveButton);
+            //            addButton.setVisible(false);
+//            rechnungSaveButton.setVisible(true);
+//            rechnungSaveButton.setDisable(true);
+//            positionenScanButton.setVisible(true);
+            clearAll();
 
             nummerTextFeld.setText(RechnungGenerator.getRechnungNr());
-            datumTextFeld.setText(String.valueOf(LocalDateTime.now()));
+            datumTextFeld.setText(new LocalDateTimeStringConverter().toString(LocalDateTime.now())); // falsch
+
             tischComboBox.setDisable(false);
-            positionenListView.getSelectionModel().clearSelection();
             rechnungTreeView.setDisable(true);
         }
+
 
         void update(Rechnung rechnung) {
             nummerTextFeld.setText(rechnung.getNr());
             //datumTextFeld.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter()));
             datumTextFeld.setText(new LocalDateTimeStringConverter().toString(rechnung.getDateTime()));
-            tischComboBox.setItems(FXCollections.observableArrayList(rechnung.getTisch()));
             positionenListView.setItems(FXCollections.observableArrayList(rechnung.getPositionen()));
 
             nummerTextFeld.setEditable(false);
-            datumTextFeld.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter()));
             datumTextFeld.setEditable(false);
             positionenListView.setEditable(false);
             tischComboBox.setDisable(true);
 
             positionenListView.setItems(FXCollections.observableArrayList(rechnung.getPositionen()));
-
-            // wechseln in den Rechnungseditor
-            addButton.setOnAction((ActionEvent e) ->{
-                //clearing der Controls für eine neue Rechnung.
-                nummerTextFeld.clear();
-                datumTextFeld.clear();
-                tischComboBox.getSelectionModel().select(null);
-                positionenListView.getItems().clear();
-                addButton.setVisible(false);
-                positionenScanButton.setVisible(true);
-                rechnungSaveButton.setDisable(true);
-                rechnungSaveButton.setVisible(true);
-                if(rechnung.getPositionen() != null) {
-                    rechnungSaveButton.setDisable(false);
-                }
-
-            });
-
-
             this.rechnung = rechnung;
+
             nummerTextFeld.setText(rechnung.getNr());
             tischComboBox.getSelectionModel().select(rechnung.getTisch().ordinal());
-            datumTextFeld.setText(rechnung.getDateTime().toString());
+
+            datumTextFeld.setText(rechnung.getDateTimeFormatted());
 
         }
 
         private void clearAll() {
             nummerTextFeld.clear();
             datumTextFeld.clear();
-            tischComboBox.getSelectionModel().select(null);
-            positionenListView.getSelectionModel().select(null);
+            tischComboBox.getSelectionModel().clearSelection();
+            positionenListView.getItems().clear();
         }
 
     }
@@ -262,9 +256,9 @@ public class RistoranteController {
         }
 
         public void add(Rechnung neueRechnung) {
-            append(rechnungTreeView.getRoot(), neueRechnung);
-            //TODO
-            //rechnungTreeView.getSelectionModel().select(TreeItem<>(neueRechnung));
+            rechnungen.add(neueRechnung);
+            TreeItem<Object> tro = TreeModelHelper.append(rechnungTreeView.getRoot(), neueRechnung);
+            rechnungTreeView.getSelectionModel().select(tro);
         }
 
         }
@@ -338,6 +332,8 @@ public class RistoranteController {
                 XYChart.Series<Integer,Integer> series = new XYChart.Series<>();
                 series.setName(correspondingClass.getName());
             }
+            Map<LocalDate, List<Rechnung>> rechnungTag;
+
             //TODO stehen geblieben Seite 11/13 Punkt "3.".
         }
     }
