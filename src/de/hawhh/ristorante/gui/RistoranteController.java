@@ -3,8 +3,6 @@ package de.hawhh.ristorante.gui;
 import de.hawhh.ristorante.model.*;
 import de.hawhh.ristorante.modelgenerator.*;
 import de.hawhh.ristorante.uimodelhelper.TreeModelHelper;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -20,7 +18,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -111,7 +108,6 @@ public class RistoranteController {
             datumTextFeld.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter()));
             tischComboBox.setDisable(true);
             tischComboBox.setItems(FXCollections.observableArrayList(Tisch.values()));
-            //positionenListView.setItems(null);
 
             positionenScanButton.setOnAction(new EventHandler<ActionEvent>() {
                 @Override
@@ -134,7 +130,7 @@ public class RistoranteController {
                     Rechnung neueRechnung;
                     if (tischComboBox.getValue() != null) {
                         neueRechnung = new Rechnung(nummerTextFeld.getText(), localdatetime, (Tisch) tischComboBox.getValue());
-                        // TODO Positionen lesen und eintragen
+                        //  Positionen lesen und eintragen
                         List<Position> posList = positionenListView.getItems();
                         for (Position pos : posList) {
                             neueRechnung.add(pos);
@@ -143,7 +139,7 @@ public class RistoranteController {
                         // die neue Rechnung sichtbar machen und selektieren.
                         treeView.add(neueRechnung);
 
-                        //TODO if es existiert ein Scatterplott, dann hier aktualisieren.
+                        // aktualisieren Scatter.
                         scatterView.update(neueRechnung);
                         prepareBrowse();
 
@@ -152,11 +148,11 @@ public class RistoranteController {
 
                 }
             });
-
             // wechseln in den Rechnungseditor
             addButton.setOnAction((ActionEvent e) ->{
                 prepareEdit();
-            });        }
+            });
+        }
 
 
         void prepareBrowse() {
@@ -181,7 +177,6 @@ public class RistoranteController {
 
         void update(Rechnung rechnung) {
             nummerTextFeld.setText(rechnung.getNr());
-            //datumTextFeld.setTextFormatter(new TextFormatter<>(new LocalDateTimeStringConverter()));
             datumTextFeld.setText(new LocalDateTimeStringConverter().toString(rechnung.getDateTime()));
             positionenListView.setItems(FXCollections.observableArrayList(rechnung.getPositionen()));
 
@@ -243,11 +238,6 @@ public class RistoranteController {
             );
         }
 
-
-        void setDisable(boolean disabled) {
-
-        }
-
         public void add(Rechnung neueRechnung) {
             rechnungen.add(neueRechnung);
             TreeItem<Object> tro = TreeModelHelper.append(rechnungTreeView.getRoot(), neueRechnung);
@@ -271,7 +261,6 @@ public class RistoranteController {
             monatComboBox.setDisable(true);
 
             jahrComboBox.setItems(FXCollections.observableArrayList(RechnungHelper.jahre(rechnungen)));
-            //kategorieComboBox.setItems(FXCollections.observableArrayList(ProduktKategorie.values()));
             kategorieComboBox.getItems().addAll(FXCollections.observableArrayList(Arrays.asList(ProduktKategorie.values())));
 
             jahrComboBox.getSelectionModel().selectedItemProperty().addListener((observableValue, month, newMonth) -> {
@@ -280,42 +269,15 @@ public class RistoranteController {
                 monatComboBox.getItems().addAll(FXCollections.observableList(DateTimeUtil.legalMonthsPerYear(jahrComboBox.getValue())));
             });
 
-//            jahrComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
-//                @Override
-//                public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-//                    if(newValue != null) {
-//                        monatComboBox.setDisable(false);
-//                        monatComboBox.getItems().clear();
-//                        monatComboBox.getItems().addAll(FXCollections.observableArrayList(DateTimeUtil.legalMonthsPerYear(jahrComboBox.getValue())));
-//                    }
-//                }
-//            });
-
-            monatComboBox.getSelectionModel().selectedItemProperty().addListener((observableValue, month, newMonth) -> tryUpdate());
-            kategorieComboBox.getSelectionModel().selectedItemProperty().addListener((observableValue, month, newMonth) -> tryUpdate());
+            monatComboBox.getSelectionModel().selectedItemProperty().addListener((observableValue, month, newMonth) -> scatterVersuch());
+            kategorieComboBox.getSelectionModel().selectedItemProperty().addListener((observableValue, month, newMonth) -> scatterVersuch());
         }
 
-            private void tryUpdate() {
+        private void scatterVersuch() {
             if (jahrComboBox.getValue() != null && monatComboBox.getValue() != null && kategorieComboBox.getValue() != null) {
                 calculateScatter(jahrComboBox.getValue(), monatComboBox.getValue().getValue(), kategorieComboBox.getValue().getCorrespondingClass());
             }
-//            monatComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Month>() {
-//                @Override
-//                public void changed(ObservableValue<? extends Month> observable, Month oldValue, Month newValue) {
-//                    if (monatComboBox != null && jahrComboBox != null && kategorieComboBox != null) {
-//                        calculateScatter(jahrComboBox.getValue(), monatComboBox.getValue().getValue(), kategorieComboBox.getValue().getCorrespondingClass());
-//                    }
-//                }
-//            });
-//
-//            kategorieComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
-//                @Override
-//                public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-//                    if (monatComboBox != null && jahrComboBox != null && kategorieComboBox != null) {
-//                        calculateScatter(jahrComboBox.getValue(), monatComboBox.getValue().getValue(), kategorieComboBox.getValue().getCorrespondingClass());
-//                    }
-//                }
-//            });
+
         }
 
         private int minProduktAnzahl(int year, int month, Class<? extends Produkt> clazz) {
@@ -329,26 +291,15 @@ public class RistoranteController {
         public void update(Rechnung rechnung) {
             if (kategorieComboBox.getValue() != null && jahrComboBox.getValue() != null && monatComboBox.getValue() != null){
                 List<Produkt> ausgewählteProdukte = ProduktHelper.get(kategorieComboBox.getValue().getCorrespondingClass());
-                boolean schnittMenge = rechnung.getPositionen().stream().map(Position::getProduk).anyMatch(p -> ausgewählteProdukte.contains(p));
-                int jahr = jahrComboBox.getValue();
-                Month monat = monatComboBox.getValue();
-                if (schnittMenge && rechnung.getDate().getMonth() == monat && rechnung.getDate().getYear() == jahr){
+                boolean schnittMenge = rechnung.getPositionen().stream().map(Position::getProduk).anyMatch(prod -> ausgewählteProdukte.contains(prod));
+                if (schnittMenge && rechnung.getDate().getMonth() == monatComboBox.getValue() && rechnung.getDate().getYear() == jahrComboBox.getValue()){
                     rechnungen.add(rechnung);
                     update(rechnung);
                 }
             }
-//            if (scatterBox.getChildren().size()>0){
-//                scatterBox.getChildren().clear();
-//            }
-//            initialize();
-//            for (Position pos : rechnung.getPositionen())
-//                calculateScatter(rechnung.getDate().getYear(), rechnung.getDate().getMonth().getValue(),
-//                        kategorieComboBox.getValue().getCorrespondingClass());
-
         }
 
         private void calculateScatter(int year, int month, Class<? extends Produkt> correspondingClass) {
-            // TODO ggf. List<Produkt> ausgewaehlteProdukte = ProduktHelper.get(scatterKategorie.getValue().getCorrespondingClass());
             List<Produkt> aktuelleProdukte = ProduktHelper.get(correspondingClass);
 
             int xMax =  minProduktAnzahl(year,month,correspondingClass);
@@ -359,7 +310,7 @@ public class RistoranteController {
             final Axis xAchse = new NumberAxis(xMin,xMax,tickUnitX);
             final Axis yAchse = new CategoryAxis(FXCollections.observableArrayList(DateTimeUtil.getDaysOfMonthAsString(year,month)));
 
-            //TODO Label für Achsen setzen
+            // Label für Achsen setzen
             yAchse.setLabel("Datum");
             xAchse.setLabel("Anzahl Produkt");
 
@@ -376,10 +327,13 @@ public class RistoranteController {
 
             //Rechnungen Sortiert nach Tagen
             Map<LocalDate,List<Rechnung>> rechnungTage = RechnungHelper.rechnungenNachTagen(rechnungen,DateTimeUtil.getDaysOfMonth(year, month));
+            // Datum rausziehen
             for (Map.Entry<LocalDate,List<Rechnung>> entry : rechnungTage.entrySet() ) {
                 String datum = DateTimeUtil.DATE_FORMATTER.format(entry.getKey());
+                // Produkte mit Ihren Häufigkeiten für jedes Datum
                 Map<Produkt,Integer> produktAnzahl = RechnungHelper.produktHaeufigkeiten(entry.getValue(), correspondingClass);
                 for (Map.Entry<Produkt,Integer> gemapt : produktAnzahl.entrySet()) {
+                    // Fügen wir die Anzahlen der Produkte mit dem jeweilige Datum dem YXChart hinzu
                     produktSeriesMap.get(gemapt.getKey()).getData().add(new XYChart.Data(gemapt.getValue(), datum));
                 }
             }
