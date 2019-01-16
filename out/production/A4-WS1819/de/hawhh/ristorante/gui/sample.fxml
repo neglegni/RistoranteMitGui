@@ -60,6 +60,7 @@
                                           <TextField fx:id="nummerTextFeld" GridPane.rowIndex="1" GridPane.valignment="TOP" />
                                           <ListView fx:id="positionenListView" prefHeight="99.0" prefWidth="174.0" GridPane.columnIndex="3" GridPane.columnSpan="2" GridPane.rowIndex="1" GridPane.rowSpan="5" />
                                           <Label text="Nummer" />
+                                          <ButtonBar prefHeight="40.0" prefWidth="200.0" GridPane.rowIndex="7" />
                                           <Label text="Positionen" GridPane.columnIndex="3" />
                                           <ButtonBar id="positionButtonBar" fx:id="positionButtonBar" prefHeight="30.0" prefWidth="180.0" GridPane.columnIndex="2" GridPane.columnSpan="3" GridPane.rowIndex="7">
                                              <buttons>
@@ -75,9 +76,9 @@
                         </AnchorPane>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                      <children>
-                        <VBox prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="1.0">
+                        <VBox fx:id="scatterBox" prefHeight="200.0" prefWidth="447.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <HBox prefHeight="199.0" prefWidth="444.0">
+                              <HBox prefHeight="33.0" prefWidth="447.0">
                                  <children>
                                     <Label text="Jahr" />
                                     <ComboBox id="jahrComboBox" fx:id="jahrComboBox" prefHeight="27.0" prefWidth="61.0" />
@@ -87,7 +88,8 @@
                                     <ComboBox id="kategorieComboBox" fx:id="kategorieComboBox" prefHeight="27.0" prefWidth="94.0" />
                                  </children>
                               </HBox>
-                           </children></VBox>
+                           </children>
+                        </VBox>
                      </children></AnchorPane>
                     </items>
                 </SplitPane>

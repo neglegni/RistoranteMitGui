@@ -1,9 +1,6 @@
 package de.hawhh.ristorante.gui;
 
-import de.hawhh.ristorante.model.Produkt;
-import de.hawhh.ristorante.model.ProduktKategorie;
-import de.hawhh.ristorante.model.Rechnung;
-import de.hawhh.ristorante.model.Tisch;
+import de.hawhh.ristorante.model.*;
 import de.hawhh.ristorante.modelgenerator.*;
 import de.hawhh.ristorante.uimodelhelper.TreeModelHelper;
 import javafx.beans.value.ChangeListener;
@@ -12,23 +9,20 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.XYChart;
+import javafx.scene.chart.*;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.VBox;
 import javafx.util.converter.LocalDateTimeStringConverter;
 
-import javax.swing.text.html.parser.Parser;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collection;
+import java.time.Month;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import static de.hawhh.ristorante.uimodelhelper.TreeModelHelper.append;
-import static javafx.scene.input.KeyCode.Y;
+import java.util.stream.Collectors;
 
 
 public class RistoranteController {
@@ -69,13 +63,16 @@ public class RistoranteController {
     private Button rechnungSaveButton;
 
     @FXML
-    private ComboBox jahrComboBox;
+    private ComboBox <Integer> jahrComboBox;
 
     @FXML
-    private ComboBox monatComboBox;
+    private ComboBox <Month> monatComboBox;
 
     @FXML
-    private ComboBox kategorieComboBox;
+    private ComboBox <ProduktKategorie> kategorieComboBox;
+
+    @FXML
+    private VBox scatterBox;
 
 
 
@@ -134,7 +131,10 @@ public class RistoranteController {
                     if (tischComboBox.getValue() != null) {
                         neueRechnung = new Rechnung(nummerTextFeld.getText(), localdatetime, (Tisch) tischComboBox.getValue());
                         // TODO Positionen lesen und eintragen
-
+                        List<Position> posList = positionenListView.getItems();
+                        for (Position pos : posList) {
+                            neueRechnung.add(pos);
+                        }
                         //neues Rechnungsobjekt zum treeView hinzufügen.
                         // die neue Rechnung sichtbar machen und selektieren.
                         treeView.add(neueRechnung);
@@ -156,30 +156,19 @@ public class RistoranteController {
 
 
         void prepareBrowse() {
-
-            // positionButtonBar.getButtons().clear();
             positionButtonBar.getButtons().setAll(addButton);
             //wieder in die Ursprüngliche Detaileinsicht gewechselt
-//            positionenScanButton.setVisible(false);
-//            rechnungSaveButton.setDisable(true);
-//            rechnungSaveButton.setVisible(false);
-//            addButton.setVisible(true);
 
             //TreeView wird enabled.
             rechnungTreeView.setDisable(false);
         }
 
         private void prepareEdit() {
-            //positionButtonBar.getButtons().clear();
             positionButtonBar.getButtons().setAll(positionenScanButton,rechnungSaveButton);
-            //            addButton.setVisible(false);
-//            rechnungSaveButton.setVisible(true);
-//            rechnungSaveButton.setDisable(true);
-//            positionenScanButton.setVisible(true);
             clearAll();
 
             nummerTextFeld.setText(RechnungGenerator.getRechnungNr());
-            datumTextFeld.setText(new LocalDateTimeStringConverter().toString(LocalDateTime.now())); // falsch
+            datumTextFeld.setText(new LocalDateTimeStringConverter().toString(LocalDateTime.now()));
 
             tischComboBox.setDisable(false);
             rechnungTreeView.setDisable(true);
@@ -278,40 +267,55 @@ public class RistoranteController {
             monatComboBox.setDisable(true);
 
             jahrComboBox.setItems(FXCollections.observableArrayList(RechnungHelper.jahre(rechnungen)));
-            kategorieComboBox.setItems(FXCollections.observableArrayList(ProduktKategorie.values()));
+            //kategorieComboBox.setItems(FXCollections.observableArrayList(ProduktKategorie.values()));
+            kategorieComboBox.getItems().addAll(FXCollections.observableArrayList(Arrays.asList(ProduktKategorie.values())));
 
-            jahrComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
-                @Override
-                public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                    if(newValue != null) {
-                        monatComboBox.setDisable(false);
-                        monatComboBox.setItems(FXCollections.observableArrayList(DateTimeUtil.legalMonthsPerYear((Integer)jahrComboBox.getValue())));
-
-                    }
-                }
+            jahrComboBox.getSelectionModel().selectedItemProperty().addListener((observableValue, month, newMonth) -> {
+                monatComboBox.setDisable(false);
+                monatComboBox.getItems().clear();
+                monatComboBox.getItems().addAll(FXCollections.observableList(DateTimeUtil.legalMonthsPerYear(jahrComboBox.getValue())));
             });
 
-            monatComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
-                @Override
-                public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                    if (monatComboBox != null && jahrComboBox != null && kategorieComboBox != null) {
-                        scatterView.initialize();
-                    }
-                }
-            });
+//            jahrComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+//                @Override
+//                public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+//                    if(newValue != null) {
+//                        monatComboBox.setDisable(false);
+//                        monatComboBox.getItems().clear();
+//                        monatComboBox.getItems().addAll(FXCollections.observableArrayList(DateTimeUtil.legalMonthsPerYear(jahrComboBox.getValue())));
+//                    }
+//                }
+//            });
 
-            kategorieComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
-                @Override
-                public void changed(ObservableValue observable, Object oldValue, Object newValue) {
-                    if (monatComboBox != null && jahrComboBox != null && kategorieComboBox != null) {
-                        scatterView.initialize();
-                    }
-                }
-            });
+            monatComboBox.getSelectionModel().selectedItemProperty().addListener((observableValue, month, newMonth) -> tryUpdate());
+            kategorieComboBox.getSelectionModel().selectedItemProperty().addListener((observableValue, month, newMonth) -> tryUpdate());
+        }
+
+        private void tryUpdate() {
+            if (jahrComboBox.getValue() != null && monatComboBox.getValue() != null && kategorieComboBox.getValue() != null) {
+                System.out.println("updating scatter chart");
+                calculateScatter(jahrComboBox.getValue(), monatComboBox.getValue().getValue(), kategorieComboBox.getValue().getCorrespondingClass());
+            }
+//            monatComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Month>() {
+//                @Override
+//                public void changed(ObservableValue<? extends Month> observable, Month oldValue, Month newValue) {
+//                    if (monatComboBox != null && jahrComboBox != null && kategorieComboBox != null) {
+//                        calculateScatter(jahrComboBox.getValue(), monatComboBox.getValue().getValue(), kategorieComboBox.getValue().getCorrespondingClass());
+//                    }
+//                }
+//            });
+//
+//            kategorieComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener() {
+//                @Override
+//                public void changed(ObservableValue observable, Object oldValue, Object newValue) {
+//                    if (monatComboBox != null && jahrComboBox != null && kategorieComboBox != null) {
+//                        calculateScatter(jahrComboBox.getValue(), monatComboBox.getValue().getValue(), kategorieComboBox.getValue().getCorrespondingClass());
+//                    }
+//                }
+//            });
         }
 
         private int minProduktAnzahl(int year, int month, Class<? extends Produkt> clazz) {
-
             return RechnungHelper.minProduktHaeufigkeitProMonat(rechnungen, year, month, clazz);
         }
 
@@ -320,21 +324,71 @@ public class RistoranteController {
         }
 
         public void update(Rechnung rechnung) {
+            if (kategorieComboBox.getValue() != null && jahrComboBox.getValue() != null && monatComboBox.getValue() != null){
+                List<Produkt> ausgewählteProdukte = ProduktHelper.get(kategorieComboBox.getValue().getCorrespondingClass());
+                boolean schnittMenge = rechnung.getPositionen().stream().map(Position::getProduk).anyMatch(p -> ausgewählteProdukte.contains(p));
+                int jahr = jahrComboBox.getValue();
+                Month monat = monatComboBox.getValue();
+                if (schnittMenge && rechnung.getDate().getMonth() == monat && rechnung.getDate().getYear() == jahr){
+                    rechnungen.add(rechnung);
+                    update(rechnung);
+                }
+            }
+//            if (scatterBox.getChildren().size()>0){
+//                scatterBox.getChildren().clear();
+//            }
+//            initialize();
+//            for (Position pos : rechnung.getPositionen())
+//                calculateScatter(rechnung.getDate().getYear(), rechnung.getDate().getMonth().getValue(),
+//                        kategorieComboBox.getValue().getCorrespondingClass());
+
         }
 
         private void calculateScatter(int year, int month, Class<? extends Produkt> correspondingClass) {
-            List products = ProduktHelper.get(correspondingClass);
-            int max = RechnungHelper.maxProduktHaeufigkeitProMonat(products, year,month,correspondingClass);
-            int min = RechnungHelper.minProduktHaeufigkeitProMonat(products,year,month,correspondingClass);
+            // TODO ggf. List<Produkt> ausgewaehlteProdukte = ProduktHelper.get(scatterKategorie.getValue().getCorrespondingClass());
+            List<Produkt> aktuelleProdukte = ProduktHelper.get(correspondingClass);
 
-            new CategoryAxis().setCategories(FXCollections.observableArrayList(DateTimeUtil.getDaysOfMonthAsString(year, month)));
-            for (Object prod: products) {
-                XYChart.Series<Integer,Integer> series = new XYChart.Series<>();
-                series.setName(correspondingClass.getName());
+            int xMax =  minProduktAnzahl(year,month,correspondingClass);
+            int xMin = maxProduktAnzahl(year,month,correspondingClass);
+            int tickUnitX = (xMax-xMin)/10;
+
+            // Werte für die xAchse und yAchse bestimmen
+            final Axis xAchse = new NumberAxis(xMin,xMax,tickUnitX);
+            final Axis yAchse = new CategoryAxis(FXCollections.observableArrayList(DateTimeUtil.getDaysOfMonthAsString(year,month)));
+
+            //TODO Label für Achsen setzen
+
+            ScatterChart rechnungScatter = new ScatterChart<>(xAchse,yAchse);
+
+            // Serien erstellen.
+            Map<Produkt, XYChart.Series> produktSeriesMap = aktuelleProdukte.stream().collect(Collectors.toMap(prod -> prod, prod -> {
+                XYChart.Series series = new XYChart.Series();
+                series.setName(prod.getName());
+                return series;
+            }));
+            scatterBox.getChildren().add(rechnungScatter);
+
+
+            //Rechnungen Sortiert nach Tagen
+            Map<LocalDate,List<Rechnung>> rechnungTage = RechnungHelper.rechnungenNachTagen(rechnungen,DateTimeUtil.getDaysOfMonth(year, month));
+            for (Map.Entry<LocalDate,List<Rechnung>> entry : rechnungTage.entrySet() ) {
+                String datum = DateTimeUtil.DATE_TIME_FORMATTER.format(entry.getKey());
+                Map<Produkt,Integer> produktAnzahl = RechnungHelper.produktHaeufigkeiten(entry.getValue(), correspondingClass);
+                for (Map.Entry<Produkt,Integer> gemapt : produktAnzahl.entrySet()) {
+                    produktSeriesMap.get(gemapt.getKey()).getData().add(new XYChart.Data(gemapt.getValue(), datum));
+                }
             }
-            Map<LocalDate, List<Rechnung>> rechnungTag;
 
-            //TODO stehen geblieben Seite 11/13 Punkt "3.".
+            produktSeriesMap.values().forEach(series -> rechnungScatter.getData().add(series));
+
+            scatterBox.getChildren().clear();
+            scatterBox.getChildren().add(rechnungScatter);
+
+            AnchorPane.setTopAnchor(rechnungScatter,1.0);
+            AnchorPane.setBottomAnchor(rechnungScatter,1.0);
+            AnchorPane.setLeftAnchor(rechnungScatter,1.0);
+            AnchorPane.setRightAnchor(rechnungScatter,1.0);
+
         }
     }
 }
