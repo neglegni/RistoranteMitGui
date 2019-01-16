@@ -291,9 +291,8 @@ public class RistoranteController {
             kategorieComboBox.getSelectionModel().selectedItemProperty().addListener((observableValue, month, newMonth) -> tryUpdate());
         }
 
-        private void tryUpdate() {
+            private void tryUpdate() {
             if (jahrComboBox.getValue() != null && monatComboBox.getValue() != null && kategorieComboBox.getValue() != null) {
-                System.out.println("updating scatter chart");
                 calculateScatter(jahrComboBox.getValue(), monatComboBox.getValue().getValue(), kategorieComboBox.getValue().getCorrespondingClass());
             }
 //            monatComboBox.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Month>() {
@@ -357,6 +356,8 @@ public class RistoranteController {
             final Axis yAchse = new CategoryAxis(FXCollections.observableArrayList(DateTimeUtil.getDaysOfMonthAsString(year,month)));
 
             //TODO Label für Achsen setzen
+            yAchse.setLabel("Datum");
+            xAchse.setLabel("Anzahl Produkt");
 
             ScatterChart rechnungScatter = new ScatterChart<>(xAchse,yAchse);
 
@@ -372,7 +373,7 @@ public class RistoranteController {
             //Rechnungen Sortiert nach Tagen
             Map<LocalDate,List<Rechnung>> rechnungTage = RechnungHelper.rechnungenNachTagen(rechnungen,DateTimeUtil.getDaysOfMonth(year, month));
             for (Map.Entry<LocalDate,List<Rechnung>> entry : rechnungTage.entrySet() ) {
-                String datum = DateTimeUtil.DATE_TIME_FORMATTER.format(entry.getKey());
+                String datum = DateTimeUtil.DATE_FORMATTER.format(entry.getKey());
                 Map<Produkt,Integer> produktAnzahl = RechnungHelper.produktHaeufigkeiten(entry.getValue(), correspondingClass);
                 for (Map.Entry<Produkt,Integer> gemapt : produktAnzahl.entrySet()) {
                     produktSeriesMap.get(gemapt.getKey()).getData().add(new XYChart.Data(gemapt.getValue(), datum));
