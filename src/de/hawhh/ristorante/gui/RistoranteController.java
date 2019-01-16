@@ -12,6 +12,7 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.converter.LocalDateTimeStringConverter;
 
@@ -73,6 +74,9 @@ public class RistoranteController {
 
     @FXML
     private VBox scatterBox;
+
+    @FXML
+    private HBox saombo;
 
 
 
@@ -383,6 +387,7 @@ public class RistoranteController {
             produktSeriesMap.values().forEach(series -> rechnungScatter.getData().add(series));
 
             scatterBox.getChildren().clear();
+            scatterBox.getChildren().add(saombo);
             scatterBox.getChildren().add(rechnungScatter);
 
             AnchorPane.setTopAnchor(rechnungScatter,1.0);

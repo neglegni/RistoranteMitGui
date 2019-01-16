@@ -78,7 +78,7 @@
                      <children>
                         <VBox fx:id="scatterBox" prefHeight="200.0" prefWidth="447.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <HBox prefHeight="33.0" prefWidth="447.0">
+                              <HBox fx:id="saombo" prefHeight="33.0" prefWidth="447.0">
                                  <children>
                                     <Label text="Jahr" />
                                     <ComboBox id="jahrComboBox" fx:id="jahrComboBox" prefHeight="27.0" prefWidth="61.0" />
