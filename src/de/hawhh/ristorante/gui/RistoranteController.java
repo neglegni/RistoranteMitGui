@@ -239,7 +239,8 @@ public class RistoranteController {
         }
 
         public void add(Rechnung neueRechnung) {
-            rechnungen.add(neueRechnung);
+            //rechnungen.add(neueRechnung);
+
             TreeItem<Object> tro = TreeModelHelper.append(rechnungTreeView.getRoot(), neueRechnung);
             rechnungTreeView.getSelectionModel().select(tro);
         }
@@ -294,16 +295,17 @@ public class RistoranteController {
                 boolean schnittMenge = rechnung.getPositionen().stream().map(Position::getProduk).anyMatch(prod -> ausgewählteProdukte.contains(prod));
                 if (schnittMenge && rechnung.getDate().getMonth() == monatComboBox.getValue() && rechnung.getDate().getYear() == jahrComboBox.getValue()){
                     rechnungen.add(rechnung);
-                    update(rechnung);
+                    //update(rechnung);
+                    calculateScatter(jahrComboBox.getValue(), monatComboBox.getValue().getValue(), kategorieComboBox.getValue().getCorrespondingClass());
                 }
             }
         }
 
         private void calculateScatter(int year, int month, Class<? extends Produkt> correspondingClass) {
-            List<Produkt> aktuelleProdukte = ProduktHelper.get(correspondingClass);
 
-            int xMax =  minProduktAnzahl(year,month,correspondingClass);
-            int xMin = maxProduktAnzahl(year,month,correspondingClass);
+
+            int xMax =  maxProduktAnzahl(year,month,correspondingClass);
+            int xMin = minProduktAnzahl(year,month,correspondingClass);
             int tickUnitX = (xMax-xMin)/10;
 
             // Werte für die xAchse und yAchse bestimmen
@@ -315,6 +317,10 @@ public class RistoranteController {
             xAchse.setLabel("Anzahl Produkt");
 
             ScatterChart rechnungScatter = new ScatterChart<>(xAchse,yAchse);
+
+            List<Produkt> aktuelleProdukte = ProduktHelper.get(kategorieComboBox.getValue().getCorrespondingClass());
+
+
 
             // Serien erstellen.
             Map<Produkt, XYChart.Series> produktSeriesMap = aktuelleProdukte.stream().collect(Collectors.toMap(prod -> prod, prod -> {
@@ -341,7 +347,7 @@ public class RistoranteController {
             produktSeriesMap.values().forEach(series -> rechnungScatter.getData().add(series));
 
             scatterBox.getChildren().clear();
-            scatterBox.getChildren().add(saombo);
+            scatterBox.getChildren().addAll(saombo);
             scatterBox.getChildren().add(rechnungScatter);
 
             AnchorPane.setTopAnchor(rechnungScatter,1.0);
